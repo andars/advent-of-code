@@ -25,6 +25,7 @@ int main() {
             printf("Error! %c\n", c);
             return 1;
         }
+        position++;
     }
     printf("Level: %d\n", level);
     printf("Basement Entry Position: %d\n", basement_entry);
