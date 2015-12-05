@@ -4,6 +4,9 @@ int main() {
     char c = ' ';
 
     int level = 0;
+    int basement_entry = -1;
+    int position = 1;
+    
     while (scanf("%c", &c) > 0) {
         switch (c) {
         case '(':
@@ -11,6 +14,9 @@ int main() {
             break;
         case ')':
             level--;
+            if (level < 0 && basement_entry < 0) {
+                basement_entry = position;
+            }
             break;
         case '\n':
         case '\r':
@@ -21,4 +27,5 @@ int main() {
         }
     }
     printf("Level: %d\n", level);
+    printf("Basement Entry Position: %d\n", basement_entry);
 }
