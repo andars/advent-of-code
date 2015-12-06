@@ -51,6 +51,11 @@ val instream = TextIO.openIn("inputs/day03.txt")
 val inputstring = TextIO.inputAll(instream);
 val input = String.explode inputstring;
 
+exception Wat
+fun partition [] = []
+  | partition (x::y::xs) = (x,y)::partition(xs)
+  | partition (x::xs) = raise Wat
+
 fun encode (x,y) =
   HashString.hashString (Int.toString x ^ ", " ^ Int.toString y);
 
@@ -77,5 +82,17 @@ fun solve (input) =
 
 
 val (final, solution) = solve (input);
+print("santa only: ");
 print(Int.toString solution);
+
+val both = partition input;
+val santa = List.map (#1) (partition input);
+val robot = List.map (#2) (partition input);
+
+val (init, _) = solve(santa);
+val (final,_,_) = List.foldl char_handler (init,0,0) robot;
+
+print("santa + robot: ");
+print(Int.toString (Set.size(final)));
+
 
