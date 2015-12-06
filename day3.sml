@@ -14,34 +14,12 @@ signature ORDERED = sig
   val leq : T * T -> bool
 end
 
-structure StringOrdered: ORDERED = struct 
-  type T = string 
-  val eq = (op =)
-  val lt = String.<
-  val leq = String.<=
-end
-
-structure PairOrdered: ORDERED = struct
-  type T = int * int 
-  fun eq ((a,b),(c,d)) = (a = c) andalso (b = d)
-  fun lt ((a,b),(c,d)) = a < c (*(a < c) orelse (b < d)*)
-  fun leq (x,y) = lt (x,y) orelse eq (x,y)
-end
-structure IntOrdered: ORDERED = struct
-  type T = int
-  val eq = (op =)
-  val lt = (op<)
-  fun leq (a,b) = (a < b) orelse (a = b)
-end
-(*
 structure WordOrdered: ORDERED = struct
   type T = word 
   val eq = (op =)
-  val lt = (op<)
-  fun leq (a,b) = (a < b) orelse (a = b)
+  val lt = (Word.<)
+  val leq = (Word.<=) 
 end
-*)
-
 
 functor UnbalancedSet(Element : ORDERED): SET = struct
   type Elem = Element.T
@@ -65,9 +43,7 @@ functor UnbalancedSet(Element : ORDERED): SET = struct
     | size (T (l, _, r)) = size l + size r + 1 
 end
 
-structure Set = UnbalancedSet(IntOrdered);
-
-(*structure Set = IntBinarySet;*)
+structure Set = UnbalancedSet(WordOrdered);
 
 exception Unrecognized;
 
@@ -76,7 +52,7 @@ val inputstring = TextIO.inputAll(instream);
 val input = String.explode inputstring;
 
 fun encode (x,y) =
-  Word.toIntX (HashString.hashString (Int.toString x ^ ", " ^ Int.toString y));
+  HashString.hashString (Int.toString x ^ ", " ^ Int.toString y);
 
 fun char_handler (c, (set, x, y)) =
   let val (nx, ny) =
@@ -87,15 +63,7 @@ fun char_handler (c, (set, x, y)) =
     |   #"<" => (x-1, y)
     |   _ => raise Unrecognized
   in
-    print "(";
-    print (Int.toString nx);
-    print ", ";
-    print (Int.toString ny);
-    print "), ";
     (Set.insert(encode (nx, ny), set), nx, ny)
-    (*
-
-    (Set.add(Int.fromString(Int.toString(nx) ^ Int.toString(ny))), nx, ny)*)
   end;
 
 val initial = Set.insert(encode (0,0), Set.empty);
