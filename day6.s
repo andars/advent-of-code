@@ -7,7 +7,7 @@ format1: .asciz "%s"
 format2: .asciz "%d,%d through %d,%d"
 test: .asciz "turn"
 
-str_change: .asciz "it's a turn (on/off)!"
+str_change: .asciz "detected turn (on/off)!"
 
 streq:
     push %rbp
