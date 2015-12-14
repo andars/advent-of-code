@@ -2,8 +2,6 @@
 
 .data
 lights: .space 1000000, 0
-message: .asciz "Hello, world\n"
-format1: .asciz "%s"
 format2: .asciz "%d,%d through %d,%d"
 test: .asciz "turn"
 
