@@ -21,7 +21,7 @@ while(<>) {
     } elsif (/LSHIFT/) {
         $circuit{$tokens[4]} = sub { return value($tokens[0]) << value($tokens[2])};
     } elsif (/RSHIFT/) {
-        $circuit{$tokens[4]} = sub { return value($tokens[0]) >> value($tokens[2]) };
+        $circuit{$tokens[4]} = sub { return value($tokens[0]) >> value($tokens[2])};
     } else {
         $circuit{$tokens[2]} = sub { return value($tokens[0])};
     }
@@ -32,16 +32,10 @@ my %cache;
 sub cache {
     my $key = shift;
     my $val = shift;
-    if (defined $val) {
-        $cache{$key} = $val;
-    } else {
-        return $cache{$key};
-    }
-}
-
-sub cached {
-    my $key = shift;
-    return exists $cache{$key};
+    if (not exists $cache{$key}) {
+        $cache{$key} = $val->();
+    } 
+    return $cache{$key};
 }
 
 sub value {
@@ -51,12 +45,7 @@ sub value {
         return $key;
     }
 
-    if (cached($key)) {
-        return cache($key);
-    }
-
-    my $value = $circuit{$key}->();
-    return cache($key, $value); 
+    return cache($key, sub { $circuit{$key}->() }); 
 }
 
 my $val_a = value('a');
