@@ -23,80 +23,61 @@ while(<>) {
     } elsif (/RSHIFT/) {
         $circuit{$tokens[4]} = ['RSHIFT', $tokens[0], $tokens[2]];
     } else {
-        if (is_numeric($tokens[0])) {
-            $circuit{$tokens[2]} = [int $tokens[0]];
-        } else {
-            $circuit{$tokens[2]} = ['REF', $tokens[0]];
-        }
+        $circuit{$tokens[2]} = [$tokens[0]];
     }
 }
 
-my %ca;
+my %cache;
 
 sub cache {
     my $key = shift;
     my $val = shift;
-    $ca{$key} = $val;
+    if (defined $val) {
+        $cache{$key} = $val;
+    } else {
+        return $cache{$key};
+    }
 }
 
 sub cached {
     my $key = shift;
-    return exists $ca{$key};
+    return exists $cache{$key};
 }
 
 sub value {
     my $key = shift;
-    #say 'key is ' . $key;
+
     if (is_numeric($key)) {
         return $key;
     }
 
     if (cached($key)) {
-        return $ca{$key};
+        return cache($key);
     }
     my @el = @{ $circuit{$key} };
-#    print 'arr: ';
-    #say @el;
-    #print 'val: ';
-    #say $el[0];
 
     for ($el[0]) {
         if (/AND/) {
-            my $res = value($el[1]) & value($el[2]);
-            cache($key, $res);
-            return $res;
+            return cache($key, value($el[1]) & value($el[2]));
         } elsif (/OR/) {
-            my $res = value($el[1]) | value($el[2]);
-            cache($key, $res);
-            return $res;
+            return cache($key, value($el[1]) | value($el[2]));
         } elsif (/NOT/) {
-            my $res = ~value($el[1]) & 0xffff;
-            cache($key, $res);
-            return $res;
+            return cache($key, ~value($el[1]) & 0xffff);
         } elsif (/LSHIFT/) {
-            my $res = value($el[1]) << $el[2];
-            cache($key, $res);
-            return $res;
+            return cache($key, value($el[1]) << $el[2]);
         } elsif (/RSHIFT/) {
-            my $res = value($el[1]) >> $el[2];
-            cache($key, $res);
-            return $res;
-        } elsif (/REF/) {
-            return value($el[1]);
+            return cache($key, value($el[1]) >> $el[2]);
         } else {
-            return $el[0];
+            return value($el[0]);
         }
     }
-
 }
 
 my $val_a = value('a');
 print "part 1: value of a: " . $val_a . "\n";
 
-%ca = ();
+%cache = ();
 
 $circuit{'b'} = [($val_a)];
 
 print "part 2: value of a: " . value('a') . "\n";
-
-
