@@ -1,5 +1,7 @@
+#ignore everything with no extension
 *
 !/**/
 !*.*
 
 *.pyc
+*.class
