@@ -1,0 +1,30 @@
+Applescript
+Assembly             6?
+BASIC
+C                    1
+C++                  8
+C#
+Clojure
+CoffeeScript
+Fortran
+Go
+Haskell              2
+Java
+Javascript
+Lisp                 4
+Machine Code
+Mathematica
+MATLAB
+Objective-C
+Pascal
+Perl                 7
+PHP
+Pico
+Postscript
+Python               5
+Ruby                 2
+Scala
+Scratch
+Standard ML          3
+Swift
+VBA
