@@ -16,23 +16,23 @@
          (cons b (- a)))
         (else (writeln change)))))
 
+(define positions (mutable-set))
+(define part2 #f)
+
 (define (new-position pos orientation dist)
   (let loop ([curr pos]
              [d (- dist 1)])
     (let ([curr (cons (+ (car curr) (car orientation))
                       (+ (cdr curr) (cdr orientation)))])
-      (cond
-        [(set-member? positions curr)
-         (writeln curr)
-         (writeln "seen")])
+      (when (and (set-member? positions curr) (not part2))
+        (set! part2 curr))
       (set-add! positions curr)
       (cond
         [(= d 0) curr]
         [else (loop curr (- d 1))]))))
 
-(define positions (mutable-set))
 
-(define final
+(define part1
   (let follow ([position (cons 0 0)]
                [orientation (cons 0 1)]
                [ds directions])
@@ -46,4 +46,10 @@
                     orientation
                     (cdr ds))))))
 
-(writeln (+ (abs (car final)) (abs (cdr final))))
+(define (dist pos)
+  (+ (abs (car pos)) (abs (cdr pos))))
+
+(writeln "Part 1 Solution:")
+(writeln (dist part1))
+(writeln "Part 2 Solution:")
+(writeln (dist part2))
