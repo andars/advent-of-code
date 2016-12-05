@@ -1,8 +1,5 @@
-.globl _start
-
 .data
 ifn: .asciz "input.txt"
-ifd: .quad 0
 .equ x, %r8
 .equ y, %r9
 .equ vx, %r14
@@ -10,7 +7,7 @@ ifd: .quad 0
 .equ acc, %r10
 .equ index, %r13
 .equ current, %r12b
-buf: .fill 1024, 1, -1
+buf: .fill 1024
 wbuf: .quad 0
 
 .text
@@ -28,13 +25,6 @@ open_read:
     xor %rdx, %rdx
     call open
     ret
-
-open_write:
-    mov $1, %rsi
-    mov $1, %rdx
-    call open
-    ret
-
 
 # fd in %rdi
 # buf* in %rsi
@@ -64,19 +54,6 @@ exit:
     mov $60, %rax
     syscall
 
-getc:
-    mov ifd, %rdi
-    mov $buf, %rsi
-    mov $1, %rdx
-    call read
-    test %rax, %rax
-    jnz 1f
-    mov $-1, %rax
-    ret
-1:    
-    mov buf, %rax
-    ret
-
 # print character from %rdi
 # to stdout
 putc:
@@ -84,15 +61,6 @@ putc:
     mov $0, %rdi
     mov $wbuf, %rsi
     mov $1, %rdx
-    call write
-    ret
-
-# buf* in %rdi
-# count in %rsi
-puts:
-    mov %rsi, %rdx
-    mov %rdi, %rsi
-    mov $0, %rdi
     call write
     ret
 
@@ -106,7 +74,7 @@ puti:
     # quotient in %rax
     # remainder in %rdx
     cmp $0, %rdi
-    jge 3f
+    jge 1f
     push %rdi
     mov $'-', %rdi
     call putc
@@ -114,14 +82,14 @@ puti:
     neg %rdi
     call puti
     ret
-3:
+1:
     cmp $9, %rdi
-    jle 1f 
+    jle 2f 
     push %rdx
     mov %rax, %rdi
     call puti
     pop %rdx
-1:
+2:
     mov %edx, %esi # remainder
     add $'0', %edx
     mov %edx, %edi
@@ -175,15 +143,13 @@ advance:
 10:
     ret
      
+.globl _start
 _start:
     inc vy
     xor index, index
-    # open files, store fd's
     mov $ifn, %rdi
-    call open_read
-    mov %rax, ifd
-
-    mov ifd, %rdi
+    call open_read # open file, fd in %rax
+    mov %rax, %rdi
     mov $buf, %rsi
     call read_file
 
