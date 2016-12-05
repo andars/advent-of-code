@@ -1,15 +1,17 @@
 .globl _start
 
-
 .data
 ifn: .asciz "input.txt"
 ifd: .quad 0
-x: .quad 0
-y: .quad 0
-vx: .quad 0
-vy: .quad 1
-buf: .fill 16
-acc: .quad 0
+.equ x, %r8
+.equ y, %r9
+.equ vx, %r14
+.equ vy, %r15
+.equ acc, %r10
+.equ index, %r13
+.equ current, %r12b
+buf: .fill 1024, 1, -1
+wbuf: .quad 0
 
 .text
 # filename address in %rdi
@@ -44,6 +46,13 @@ read:
 
 # fd in %rdi
 # buf* in %rsi
+read_file:
+    mov $1024, %rdx
+    call read
+    ret
+
+# fd in %rdi
+# buf* in %rsi
 # count in $rdx
 write:
     mov $1, %rax
@@ -68,11 +77,12 @@ getc:
     mov buf, %rax
     ret
 
-# print character from buf
+# print character from %rdi
 # to stdout
 putc:
+    mov %rdi, wbuf
     mov $0, %rdi
-    mov $buf, %rsi
+    mov $wbuf, %rsi
     mov $1, %rdx
     call write
     ret
@@ -91,14 +101,14 @@ puti:
     xor %rsi, %rsi
     mov %rdi, %rax
     xor %rdx, %rdx
-    mov $10, %rcx
-    div %rcx
+    mov $10, %r11
+    div %r11
     # quotient in %rax
-    # remainder in %rcx
+    # remainder in %rdx
     cmp $0, %rdi
     jge 3f
     push %rdi
-    movb $'-', buf
+    mov $'-', %rdi
     call putc
     pop %rdi
     neg %rdi
@@ -114,102 +124,91 @@ puti:
 1:
     mov %edx, %esi # remainder
     add $'0', %edx
-    mov %edx, buf
+    mov %edx, %edi
     call putc
 10:
     ret
 
 advance:
-    xor %rax, %rax
-    mov buf, %ax
-    cmp $'R', %ax
+    cmp $'R', current
     jne 1f
     # R detected
-    mov vx, %r14
-    mov vy, %r15
-    neg %r14
-    mov %r15, vx #  y -> x
-    mov %r14, vy # -x -> y
+    neg vx
+    xchg vx, vy
     jmp 10f
 1:
-    cmp $'L', %ax
+    cmp $'L', current
     jne 2f
     # L detected
-    mov vx, %r14
-    mov vy, %r15
-    neg %r15
-    mov %r15, vx # -y -> x
-    mov %r14, vy #  x -> y
+    neg vy
+    xchg vx, vy
     jmp 10f
 2:
-    cmp $' ', %ax
+    cmp $' ', current 
     jne 3f
     # space detected
     jmp 10f
 
 3:
-    cmp $',', %ax
+    cmp $',', current 
     je 4f
-    cmp $'\n', %ax
+    cmp $'\n', current 
     je 4f
     jmp 5f
 4:
     # newline or comma detected
-    mov acc, %rdi
     mov vx, %rax
-    imul %rdi
+    imul acc
     add %rax, x
     mov vy, %rax
-    imul %rdi
+    imul acc 
     add %rax, y
     # reset accumulator
-    xor %rdi, %rdi
-    mov %rdi, acc
-    # \n
-    jmp 10f
+    xor acc, acc
     jmp 10f
 5:
     # digit
-    sub $'0', %ax
-    imul $10, acc, %rdi
-    add %rax, %rdi
-    mov %rdi, acc
+    sub $'0', current
+    imul $10, acc, acc
+    movsx current, %rax
+    add %rax, acc
 10:
     ret
      
 _start:
+    inc vy
+    xor index, index
     # open files, store fd's
     mov $ifn, %rdi
     call open_read
     mov %rax, ifd
+
+    mov ifd, %rdi
+    mov $buf, %rsi
+    call read_file
+
 loop:
-    call getc
-    test %rax, %rax
+    movb buf(index), current
+    test current, current
     js end
-    mov %rax, buf
+
     call advance
 
+    inc index
     jmp loop
 end:
-    movb $'\n', buf
-    call putc
-    mov buf, %rdi 
+    mov x, %rsi
+    neg x 
+    cmovl %rsi, x 
 
-10:
-    mov x, %rdi
-    mov %rdi, %rsi
-    neg %rdi
-    cmovl %rsi, %rdi
-    mov %rdi, %r14
+    mov y, %rsi
+    neg y 
+    cmovl %rsi, y 
+
+    add x, y 
     mov y, %rdi
-    mov %rdi, %rsi
-    neg %rdi
-    cmovl %rsi, %rdi
-    mov %rdi, %r15
-    add %r14, %r15
-    mov %r15, %rdi
     call puti
-    movb $10, buf
+    mov $10, %rdi
     call putc
     mov $0, %rdi
     call exit
