@@ -4,33 +4,26 @@ filename = ARGV[0]
 $screen = []
 
 6.times do |i|
-  row = []
-  50.times do |j|
-    row << 0
-  end
-  $screen << row
+  $screen << [' '] * 50
 end
 
 def rect(a,b)
   b.times do |i|
     a.times do |j|
-      $screen[i][j] = 1
+      $screen[i][j] = '#'
     end
   end
 end
 
-def rotate_row(r,shift)
-  row = $screen[r]
-  $screen[r] = row[-shift..-1] + row[0..-shift-1]
+def rotate_row(row, shift)
+  $screen[row] = $screen[row].rotate(-shift)
 end
 
-def rotate_col(c, shift)
+def rotate_col(col, shift)
   ns = $screen.transpose
-  col = ns[c]
-  ns[c] = col[-shift..-1] + col[0..-shift-1]
+  ns[col] = ns[col].rotate(-shift)
   $screen = ns.transpose
 end
-
 
 File.open(filename).each_line do |line|
   if line =~ /rect (\d*)x(\d*)/
@@ -44,14 +37,8 @@ end
 
 puts $screen.reduce(0) { |s, row|
   s + row.reduce(0) { |s2, cell|
-    s2 + cell
+    s2 + (cell == '#' ? 1 : 0)
   }
 }
 
-puts $screen.map { |row|
-  row.map {|cell|
-    cell == 1 ? "#" : " "
-  }.join
-}
-
-
+puts $screen.map(&:join)
