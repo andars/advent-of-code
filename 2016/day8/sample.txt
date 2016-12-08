@@ -1,0 +1,2 @@
+rect 3x2
+rotate column x=1 by 1
