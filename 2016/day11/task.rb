@@ -6,8 +6,7 @@ require 'pp'
 filename = ARGV[0]
 lines = File.readlines(filename)
 
-floors = []
-lines.each do |line|
+floors = lines.map do |line|
   stuff = line.split('a ').map(&:chomp)
   generators = stuff.select { |s| s.include? 'generator' }
   chips = stuff.select { |s| s.include? 'microchip' }
@@ -15,10 +14,10 @@ lines.each do |line|
   floor += generators.map do |gen|
     [:gen, gen.split(' ')[0].to_sym]
   end
-  chips.each do |chip|
-    floor << [:chip, chip.split('-')[0].to_sym]
+  floor += chips.map do |chip|
+    [:chip, chip.split('-')[0].to_sym]
   end
-  floors << floor
+  floor
 end
 
 count = floors.flatten(1).length
