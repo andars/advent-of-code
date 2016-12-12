@@ -27,17 +27,13 @@ $seen = Hash.new
 # of the paired generator and chips. Essentially, the names
 # don't matter
 def groups(floors)
-  elements = floors.flatten(1).transpose[1].uniq
-  elements.map do |el|
-    pair = []
-    floors.each_with_index do |floor, i|
-      match = floor.select { |item| item[1] == el and item[0] == :gen }
-      pair << i unless match.empty?
-      match = floor.select { |item| item[1] == el and item[0] == :chip }
-      pair << i unless match.empty?
+  g = Hash.new { |h,k| h[k] = [] }
+  floors.each_with_index do |floor, i|
+    floor.each do |item|
+     g[item[1]] << i
     end
-    pair
-  end.sort
+  end
+  g.values.sort
 end
 
 # Determines whether this item distribution fries any chips
@@ -60,9 +56,9 @@ end
 #   2. Haven't seen it (or an equivalent) state before
 def adjacents(current, count, floors)
   moves = []
-  combos = (1..2).map { |i|
+  combos = (1..2).flat_map { |i|
     floors[current].combination(i).to_a
-  }.flatten(1)
+  }
 
   [+1, -1].each do |delta|
     new_floor = current + delta
@@ -72,8 +68,8 @@ def adjacents(current, count, floors)
 
     combos.each do |combo|
       next_floors = floors.clone
-      next_floors[current] = (floors[current].to_set - combo.to_set).to_a
-      next_floors[new_floor] = (floors[new_floor].to_set + combo.to_set).to_a
+      next_floors[current] = floors[current] - combo
+      next_floors[new_floor] = floors[new_floor] + combo
       next if invalid?(next_floors)
 
       move = [new_floor, count+1, next_floors]
@@ -88,11 +84,13 @@ end
 def search(init, goal)
   next_moves = []
   next_moves += adjacents(0, 0, init)
+  node_count = 0
 
   $seen[[0, groups(init)]] = true
 
   move_count = 0
   while next_move = next_moves.shift
+    node_count += 1
     floor, dist, items = next_move
     if dist > move_count
       puts "#{dist } moves, queue has #{next_moves.length + 1}"
@@ -100,6 +98,7 @@ def search(init, goal)
     end
 
     if items[3].length == goal
+      puts "considered #{node_count} nodes"
       return dist
     end
 
