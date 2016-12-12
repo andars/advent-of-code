@@ -23,7 +23,7 @@ File.open(filename).each_line do |line|
   chk = top[0..4].join
   if chk == checksum
     sum += id
-    puts decode(name, id.to_i), id
+    puts decode(name, id), id
   end
 end
 
