@@ -30,8 +30,6 @@ def execute(regs, instructions)
   while i < instructions.length
     instr = instructions[i]
     op, a, b = instr
-    #puts "#{i} : #{instr}"
-    #puts "#{op} #{a} #{b}"
 
     if op == :cpyi
       regs[b] = a
