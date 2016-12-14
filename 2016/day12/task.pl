@@ -21,11 +21,12 @@ while (my $line = <>) {
     } elsif ($op eq 'jnz') {
         if ($a =~ /[a-d]/) {
             printf("test %%r%sx, %%r%sx\n", $a, $a);
+            printf("jnz L%d\n", $i+$b);
         } else {
-            printf('mov $' . $a .", %%rdi\n");
-            printf("test %%rdi, %%rdi\n", $a, $a);
+            if ($a != 0) {
+                printf("jmp L%d\n", $i+$b);
+            }
         }
-        printf("jnz L%d\n", $i+$b);
     } elsif ($op eq 'cpy') {
         my $arg = $a =~ /[a-d]/ ? '%%r%sx' : '$%s';
         printf("mov $arg, %%r%sx\n", $a, $b);
